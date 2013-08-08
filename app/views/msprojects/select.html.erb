@@ -9,13 +9,13 @@
 <br/>
 <br/>
 <div style="clear: both;"/>
-<% form_for :ms_project, :url => {:action => 'add', :project_id => @project } do %>
+<%= form_for :ms_project, :url => {:action => 'add', :project_id => @project } do %>
 <table class="list">
   <tr>
-  <th><%= link_to image_tag('toggle_check.png'), 
-          {}, 
+  <th><%= link_to image_tag('toggle_check.png'),
+          {},
           :onclick => "toggleCheckboxesBySelector('input'); return false;",
-          :title => "#{l(:button_check_all)}/#{l(:button_uncheck_all)}" 
+          :title => "#{l(:button_check_all)}/#{l(:button_uncheck_all)}"
         %>
   </th>
   <th><%= l :title %></th>
@@ -30,12 +30,12 @@
   <tr>
   <td><%= check_box_tag 'checked_items[]', task.task_id, :class => 'task_check_box' %></td>
   <td><span class="msp-level<%= task.outline_level %>"><%= task.name %></span></td>
-  <td><%= select_tag 'trackers[]', options_for_select(@trackers.collect {|t| [t.name, t.id]})%></td>
-  <td><%= select_tag 'assigns[]', "<option value=''></option>" + options_for_select(@members.collect {|m| [m.name, m.id]}) %></td>
-  <td><%= task.create? ? l(:label_added) : l(:label_modified) %></td>
-  <td><%= task.start_date %></td>
-  <td><%= task.finish_date %></td>
-  <td><%= task.create_date %></td>
+  <td><%= select_tag 'trackers[]', options_for_select(@project.trackers.collect {|t| [t.name, t.id]}) %></td>
+  <td><%= select_tag 'assigns[]', options_for_select(@project.members.collect {|m| [m.name, m.user_id]}) %></td>
+  <td align="center"><%= task.create? ? l(:label_added) : l(:label_modified) %></td>
+  <td align="center"><%= task.start_date %></td>
+  <td align="center"><%= task.finish_date %></td>
+  <td align="center"><%= task.create_date %></td>
   </tr>
   <% end %>
 </table>

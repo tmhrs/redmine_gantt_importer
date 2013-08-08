@@ -1,0 +1,8 @@
+<h3><%= l(:msproject) %></h3>
+<% if !@project.blank? %>
+	<%= link_to "MS Project XMLファイルのインポート",
+	      :controller => "msprojects",
+	      :action => "index",
+	      :project_id => @project.identifier %>
+<% end %>
+<br>

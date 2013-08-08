@@ -1,3 +1,4 @@
+# encoding: utf-8
 require 'tempfile'
 class MsprojectsController < ApplicationController
   unloadable
@@ -6,7 +7,10 @@ class MsprojectsController < ApplicationController
 
   helper :msprojects
   include MsprojectsHelper
-  
+
+  menu_item :msprojects, :only => :index
+  #menu :project_menu, :msprojects, { :controller => 'msprojects', :action => 'index' }, :caption => :msproject, :param => :project_id
+
   def index
     xml = ""
     @tasks = []
@@ -16,7 +20,8 @@ class MsprojectsController < ApplicationController
   def select
     begin
       tmpfile = Tempfile.new(params[:file][:msproject].original_filename)
-      xml = params[:file][:msproject].read 
+      xml = params[:file][:msproject].read
+      xml.force_encoding("utf-8")
       tmpfile.write(xml)
       tmpfile.close
       $tmpfile = {} if $tmpfile.nil?
@@ -34,8 +39,8 @@ class MsprojectsController < ApplicationController
       return
     end
     @resources = find_resources(xml)
-    params[:file][:msproject].close
-    @members = Member.find(:all, params[:project_id]).collect {|m| User.find_by_id m.user_id }
+    #params[:file][:msproject].close
+    @members = @project.members.collect {|m| User.find_by_id m.user_id }
     @trackers = @project.trackers
     session[:msp_tmp_filename] = params[:file][:msproject].original_filename
   end
@@ -59,7 +64,7 @@ class MsprojectsController < ApplicationController
       @tasks << tasks.select{|t| t.task_id == i}[0]
     end
     @tasks.each_with_index do |t, i|
-      if t.create? 
+      if t.create?
         issue = Issue.new({:subject => t.name})
       else
         issue = find_issue t.name, @issues
@@ -79,19 +84,26 @@ class MsprojectsController < ApplicationController
       unless parent.nil?
         issue.parent_issue_id = parent.id
       end
+
       if t.create? and issue.save
-        @added_tasks << issue 
+        @added_tasks << issue
         @saved_task_table[t.outline_number] = issue
       elsif issue.save
         @updated_tasks << issue
         @saved_task_table[t.outline_number] = issue
       end
     end
-      
-    flash[:notice] = []
-    flash[:notice] << l(:msp_read_message, @added_tasks.size)
-    flash[:notice] << " "
-    flash[:notice] << l(:msp_update_message, @updated_tasks.size)
+
+    #flash[:notice] = []
+    #flash[:notice] << l(:msp_read_message, :d => @added_tasks.size)
+    #flash[:notice] << " "
+    #flash[:notice] << l(:msp_update_message, :d => @updated_tasks.size)
+    flash[:notice] = ''
+    flash[:notice] += @added_tasks.size.to_s
+    flash[:notice] += l(:msp_read_message)
+    flash[:notice] += ' '
+    flash[:notice] += @updated_tasks.size.to_s
+    flash[:notice] += l(:msp_update_message)
   end
 
   private
@@ -102,7 +114,7 @@ class MsprojectsController < ApplicationController
   def list_issues
     @issues = Issue.find :all, :conditions => ['project_id = ?', @project.id]
   end
-  
+
   def find_issue name, issues
     issues.each do |issue|
       return issue if issue.subject == name

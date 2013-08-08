@@ -1,3 +1,4 @@
+# encoding: utf-8
 class MspTask
   attr_accessor :task_id
   attr_accessor :name
