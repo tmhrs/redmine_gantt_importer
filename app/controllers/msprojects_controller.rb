@@ -38,7 +38,8 @@ class MsprojectsController < ApplicationController
       redirect_to :action => 'index', :project_id => @project.identifier
       return
     end
-    @resources = find_resources(xml)
+
+    search_assignee xml
     #params[:file][:msproject].close
     @members = @project.members.collect {|m| User.find_by_id m.user_id }
     @trackers = @project.trackers
@@ -49,6 +50,7 @@ class MsprojectsController < ApplicationController
     @tasks = []
     @added_tasks = []
     @updated_tasks = []
+    @failed_tasks = []
     @saved_task_table = {}
     xml = ''
     begin
@@ -64,6 +66,7 @@ class MsprojectsController < ApplicationController
       @tasks << tasks.select{|t| t.task_id == i}[0]
     end
     @tasks.each_with_index do |t, i|
+      t.name = params['task_name_' + t.task_id] if t.name.nil?
       if t.create?
         issue = Issue.new({:subject => t.name})
       else
@@ -72,7 +75,7 @@ class MsprojectsController < ApplicationController
       issue.project = @project
       issue.tracker_id = params[:trackers][params[:checked_items][i].to_i]
       assigned_id = params[:assigns][params[:checked_items][i].to_i]
-      unless assigned_id.blank?
+      unless assigned_id.blank? or assigned_id == "0"
         issue.assigned_to_id = params[:assigns][params[:checked_items][i].to_i]
       end
       issue.author = User.current
@@ -88,22 +91,26 @@ class MsprojectsController < ApplicationController
       if t.create? and issue.save
         @added_tasks << issue
         @saved_task_table[t.outline_number] = issue
-      elsif issue.save
-        @updated_tasks << issue
-        @saved_task_table[t.outline_number] = issue
+      #elsif issue.save
+      #  @updated_tasks << issue
+      #  @saved_task_table[t.outline_number] = issue
+      else
+        begin
+          issue.save!
+          @updated_tasks << issue
+          @saved_task_table[t.outline_number] = issue
+        rescue => e
+          @failed_tasks << [t.name, e.message]
+        end
       end
     end
 
-    #flash[:notice] = []
-    #flash[:notice] << l(:msp_read_message, :d => @added_tasks.size)
-    #flash[:notice] << " "
-    #flash[:notice] << l(:msp_update_message, :d => @updated_tasks.size)
-    flash[:notice] = ''
-    flash[:notice] += @added_tasks.size.to_s
-    flash[:notice] += l(:msp_read_message)
-    flash[:notice] += ' '
-    flash[:notice] += @updated_tasks.size.to_s
-    flash[:notice] += l(:msp_update_message)
+    flash[:notice] = ""
+    flash[:notice] += l(:msp_read_message, :count => @added_tasks.size.to_s) if @added_tasks != []
+    flash[:notice] += " "
+    flash[:notice] += l(:msp_update_message, :count => @updated_tasks.size.to_s) if @updated_tasks != []
+    flash[:notice] += " "
+    flash[:notice] += l(:msp_fail_message, :count => @failed_tasks.size.to_s) if @failed_tasks != []
   end
 
   private
@@ -124,6 +131,7 @@ class MsprojectsController < ApplicationController
 
   def search_parent_issue(task, tasks)
     parent_number = task.outline_number.split(".")[0..-2].join(".")
+    parent_number = "0" if parent_number == ""
     parent_task = nil
     @saved_task_table.each do |number, issue|
       if parent_number == number
@@ -132,4 +140,39 @@ class MsprojectsController < ApplicationController
     end
     nil
   end
+
+  def search_assignee xml
+    @members = @project.members.collect {|m| User.find_by_id m.user_id }
+    @resources = find_resources(xml)
+    @assignments = find_assignments(xml)
+    flg_overlap = false
+
+    @assignments.each do |assignment|
+      assignee = nil
+      @resources.each do |resource|
+        if assignment.resource_uid == resource.resource_uid
+          @members.each do |member|
+            if (member.lastname + member.firstname).gsub(/(\s|　)+/, '') == resource.name.gsub(/(\s|　)+/, '')
+              assignee = member
+              break
+            end
+          end
+          if assignee.nil?
+            assignee = User.find_by_mail(resource.email) if resource.email.present?
+          end
+          break
+        end
+      end
+      @tasks.each do |task|
+        if assignment.task_uid == task.task_uid
+          unless task.assignee
+            task.assignee = assignee.id
+          else
+            flash[:notice] = l(:assign_multiple)
+          end
+        end
+      end unless assignee.nil?
+    end
+  end
+
 end

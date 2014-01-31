@@ -8,6 +8,7 @@ module MsprojectsHelper
     doc.elements.each('//Task') do |task_tag|
       task = MspTask.new
       task.task_id = task_tag.elements['ID'].text
+      task.task_uid = task_tag.elements['UID'].text
       task.wbs = task_tag.elements['WBS'].text
       task.outline_number = task_tag.elements['OutlineNumber'].text
       task.outline_level = task_tag.elements['OutlineLevel'].text.to_i
@@ -27,19 +28,31 @@ module MsprojectsHelper
     tasks
   end rescue raise 'parse error'
 
-
   def find_resources xml
     resources = []
     doc = REXML::Document.new xml
     doc.elements.each('//Resource') do |resource_tag|
       resource = MspResource.new
-      id = resource_tag.elements['ID']
-      resource.id = id if id
+      resource.resource_id = resource_tag.elements['ID'].text
+      resource.resource_uid = resource_tag.elements['UID'].text
       name = resource_tag.elements['Name']
-      resource.name = name.text if name
+      resource.name = name.text.force_encoding("utf-8") if name
+      resource.email = resource_tag.elements['EmailAddress'].text
       resources << resource
     end
     resources
+  end
+
+  def find_assignments xml
+    assignments = []
+    doc = REXML::Document.new xml
+    doc.elements.each('//Assignment') do |assignment_tag|
+      assignment = MspAssignment.new
+      assignment.task_uid = assignment_tag.elements['TaskUID'].text
+      assignment.resource_uid = assignment_tag.elements['ResourceUID'].text
+      assignments << assignment
+    end
+    assignments
   end
 
   private
