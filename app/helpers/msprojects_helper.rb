@@ -6,6 +6,7 @@ module MsprojectsHelper
     tasks = []
     doc = REXML::Document.new xml
     doc.elements.each('//Task') do |task_tag|
+      next if task_tag.elements['IsNull'].text == '1'
       task = MspTask.new
       task.task_id = task_tag.elements['ID'].text
       task.task_uid = task_tag.elements['UID'].text
@@ -37,11 +38,12 @@ module MsprojectsHelper
       resource.resource_uid = resource_tag.elements['UID'].text
       name = resource_tag.elements['Name']
       resource.name = name.text.force_encoding("utf-8") if name
-      resource.email = resource_tag.elements['EmailAddress'].text
+      email = resource_tag.elements['EmailAddress']
+      resource.email = email.text if email
       resources << resource
     end
     resources
-  end
+  end rescue raise 'parse error'
 
   def find_assignments xml
     assignments = []
@@ -53,7 +55,7 @@ module MsprojectsHelper
       assignments << assignment
     end
     assignments
-  end
+  end rescue raise 'parse error'
 
   private
   def has_task name, issues
