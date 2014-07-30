@@ -4,6 +4,7 @@ class MsprojectsController < ApplicationController
   unloadable
   before_filter :find_project, :only => [:index, :select, :add]
   before_filter :list_issues, :only => [:index, :select, :add]
+  before_filter :authorize, :only => [:index]
 
   helper :msprojects
   include MsprojectsHelper

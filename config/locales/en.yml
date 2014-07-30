@@ -1,6 +1,6 @@
 # English strings go here for Rails i18n
 en:
-  msproject: MS Project
+  msproject: Gantt chart import
   title: Subject
   tracker: Tracker
   start_date: Start
@@ -11,8 +11,20 @@ en:
   resource: Resource
   msp_read_message: issues added
   msp_update_message: issues updated
+  msp_fail_message: issues failed
+
   file_read_error: Error
   new_task: New Tickets
   modified_task: Modified Tickets
-
   not_found_member: Member is not registered in the project. Please perform the uptake again after registering members.
+
+  label_classification: classification
+  failed_task: failed issues
+  error_message: error message
+  no_title: (no title)
+  issue_name_blank: Please enter subject
+  assign_multiple: There are issues that are assigned more than one person. Please check the setting of the person in charge.
+
+  label_sideber_import: import XML
+  project_module_msproject: Gantt chart import
+  permission_msprojects: import XML

@@ -1,19 +1,23 @@
-= MS Project Importer for Redmine
-== Requirement 
+= Gantt chart importer for Redmine
+== Requirement
 You need any environments that Redmine work on.
 
 == Installation
 1. $ cd REDMINE_ROOT
-2. $ ruby script/plugin install git://github.com/suer/redmine_ms_projects.git
+2. $ ruby script/plugin install git://github.com/yoshidayo/redmine_redmine_gantt_importer.git
 
 == Usage
-1. save a MS Project format file(.msp) as an xml format(.xml) with MS Project
-2. access your a redmine project, then click "MS Project" tab
+1. save a Gantt chart format file(.msp) as an xml format(.xml)
+2. access your a redmine project, then click "import XML"
 3. select xml file, and click save button
 4. select tasks that you want to import, then click save button
 
 == Update version 0.1.1
-�ȉ��̊��ɑΉ�
+以下の環境に対応
 Redmine 2.3.1.stable
 ruby 1.9.3
 Rails 3.2.13
+
+== Update version 0.1.2
+・名称変更
+・自動アサイン機能の追加

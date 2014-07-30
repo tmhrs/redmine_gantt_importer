@@ -1,7 +1,7 @@
 # English strings go here for Rails i18n
 ja:
   # my_label: "My label"
-  msproject: MS Project
+  msproject: ガントチャートインポート
   title: タイトル
   tracker: トラッカー
   start_date: 開始日
@@ -25,3 +25,7 @@ ja:
   no_title: (題名なし)
   issue_name_blank: 登録する場合はチケット名を入力してください
   assign_multiple: 複数の担当者が割り当てられたタスクがあります。担当者の設定を確認してください。
+
+  label_sideber_import: XMLファイルのインポートを行う
+  project_module_msproject: ガントチャートインポート
+  permission_msprojects: XMLファイルのインポート
